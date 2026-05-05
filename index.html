@@ -1,86 +1,64 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlowEnglish - 영작 & Speaking Flow</title>
-  <meta name="description" content="간단 영작부터 듣고 답하기까지 Speaking 연습">
-  <link rel="manifest" href="manifest.json">
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #0f172a;
-      color: #e2e8f0;
-      min-height: 100vh;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-      color: #60a5fa;
-    }
-
-    .card {
-      background: #1e2937;
-      border-radius: 16px;
-      padding: 24px;
-      margin: 20px 0;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-    }
-
-    button {
-      padding: 12px 24px;
-      margin: 8px 4px;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      background: #3b82f6;
-      color: white;
-    }
-
-    .btn-success {
-      background: #22c55e;
-      color: white;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowEnglish - 영작 & Speaking Flow</title>
+    <meta name="description" content="간단 영작부터 듣고 답하기까지 Speaking 연습">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; color: #60a5fa; }
+        .card {
+            background: #1e2937;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px 0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+        button {
+            padding: 12px 24px;
+            margin: 8px 4px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-success { background: #22c55e; color: white; }
+    </style>
 </head>
-
 <body>
-  <div class="container">
-    <h1>🌊 FlowEnglish</h1>
-    <p style="text-align:center;">기초 영작 → 듣고 바로 답하기</p>
+    <div class="container">
+        <h1>🌊 FlowEnglish</h1>
+        <p style="text-align:center;">기초 영작 → 듣고 바로 답하기</p>
 
-    <div class="card">
-      <h2 id="ko-sentence">한국어 문장이 여기에 나옵니다.</h2>
-      <input type="text" id="user-input" placeholder="영어로 입력하세요..." style="width:100%; padding:12px; margin:15px 0; border-radius:8px;">
+        <div class="card">
+            <h2 id="ko-sentence">한국어 문장이 여기에 나옵니다.</h2>
+            <input type="text" id="user-input" placeholder="영어로 입력하세요..." style="width:100%; padding:12px; margin:15px 0; border-radius:8px;">
+            
+            <div style="text-align:center; margin:20px 0;">
+                <button class="btn-primary" onclick="speakEnglish()">🔊 듣기</button>
+                <button class="btn-success" onclick="checkAnswer()">✅ 제출</button>
+                <button onclick="startListening()">🎤 말하기</button>
+            </div>
 
-      <div style="text-align:center; margin:20px 0;">
-        <button class="btn-primary" onclick="speakEnglish()">🔊 듣기</button>
-        <button class="btn-success" onclick="checkAnswer()">✅ 제출</button>
-        <button onclick="startListening()">🎤 말하기</button>
-      </div>
+            <div id="feedback" style="margin-top:20px; min-height:60px;"></div>
+        </div>
 
-      <div id="feedback" style="margin-top:20px; min-height:60px;"></div>
+        <div style="text-align:center;">
+            <button onclick="nextQuestion()">다음 문장 →</button>
+        </div>
     </div>
 
-    <div style="text-align:center;">
-      <button onclick="nextQuestion()">다음 문장 →</button>
-    </div>
-  </div>
-
-  <script src="main.js"></script>
+    <script src="main.js"></script>
 </body>
-
 </html>
