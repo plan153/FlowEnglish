@@ -1,6 +1,7 @@
 # FlowEnglish
 
 **초보자를 위한 단계별 Speaking Flow 앱**
+슬로건: “천천히, 하나씩, 흐름을 타다”
 
 - Level 2: 기본 Chunk & 영작
 - Level 3: 시제·의문문·변형
