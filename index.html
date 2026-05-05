@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowEnglish - Speaking Flow</title>
+    <title>FlowEnglish</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --primary: #3b82f6; }
@@ -15,16 +15,15 @@
             min-height: 100vh;
         }
         .container { max-width: 850px; margin: 0 auto; padding: 20px; }
-        h1 { text-align: center; color: #60a5fa; margin: 20px 0; font-size: 2rem; }
-        .level-bar { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
+        h1 { text-align: center; color: #60a5fa; margin: 15px 0 10px; font-size: 2.1rem; }
+        .level-bar { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
         .level-btn {
-            padding: 12px 20px;
+            padding: 10px 18px;
             border-radius: 9999px;
             background: #1e2937;
             color: #94a3b8;
             cursor: pointer;
             font-weight: 600;
-            font-size: 1.05rem;
         }
         .level-btn.active { background: var(--primary); color: white; }
         .card {
@@ -35,82 +34,96 @@
             box-shadow: 0 10px 20px -5px rgba(0,0,0,0.4);
         }
         #ko-sentence { font-size: 1.45rem; line-height: 1.5; min-height: 110px; margin: 20px 0; }
-        input#user-input {
+        #speech-result {
             width: 100%;
             padding: 16px;
             font-size: 1.2rem;
             border-radius: 12px;
-            border: none;
-            margin: 15px 0;
+            background: #334155;
+            color: white;
+            min-height: 80px;
+            resize: none;
         }
         button {
-            padding: 14px 22px;
+            padding: 14px 20px;
             margin: 6px 4px;
             border: none;
             border-radius: 12px;
             font-size: 1.05rem;
             cursor: pointer;
         }
+        .btn-speak { background: #22c55e; color: white; font-weight: bold; }
+        .btn-speak:active { background: #16a34a; transform: scale(0.97); }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-success { background: #22c55e; color: white; }
+        .btn-answer { background: #f59e0b; color: white; }
         .btn-shadow { background: #8b5cf6; color: white; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🌊 FlowEnglish</h1>
+        
+        <!-- 오늘의 목표 -->
+        <div style="text-align:center; margin:10px 0; font-size:1.1rem;">
+            <span id="daily-goal">오늘의 목표: 0 / 10 문장</span>
+        </div>
 
+        <!-- 레벨 선택 -->
         <div class="level-bar">
-            <div class="level-btn active" data-level="1" onclick="setLevel(1)">Level 1</div>
-            <div class="level-btn" data-level="2" onclick="setLevel(2)">Level 2</div>
-            <div class="level-btn" data-level="3" onclick="setLevel(3)">Level 3</div>
+            <div class="level-btn active" data-level="1" onclick="setLevel(1)">기초 다지기</div>
+            <div class="level-btn" data-level="2" onclick="setLevel(2)">문장 키우기</div>
+            <div class="level-btn" data-level="3" onclick="setLevel(3)">실전 흐름</div>
         </div>
 
         <div class="card">
-            <div id="level-title" style="color:#94a3b8; font-size:1.1rem;">Level 1 • Basic Chunks</div>
+            <div id="level-title" style="color:#94a3b8; font-size:1.15rem;">기초 다지기</div>
             <h2 id="ko-sentence">한국어 문장이 나오는 곳</h2>
             
-            <input type="text" id="user-input" placeholder="영어로 작성하세요...">
+            <textarea id="speech-result" rows="3" placeholder="말한 내용이 여기에 표시됩니다..."></textarea>
 
             <div style="text-align:center; margin:25px 0;">
-                <button class="btn-primary" onclick="speakEnglish()">🔊 듣기</button>
-                <button class="btn-success" onclick="checkAnswer()">✅ 제출</button>
-                <button onclick="startListening()">🎤 말하기</button>
-                <button class="btn-shadow" onclick="startShadowing()">🌊 Shadowing</button>
+                <button class="btn-speak" id="speakBtn"
+                        onmousedown="startRecording()" 
+                        onmouseup="stopRecording()"
+                        ontouchstart="startRecording()"
+                        ontouchend="stopRecording()">
+                    🎤 말해보기 (누르고 말하세요)
+                </button>
+                <button class="btn-primary" onclick="speakEnglish()">🔊 영어듣기</button>
+                <button class="btn-answer" onclick="showComparison()">📊 비교하기</button>
+                <button class="btn-shadow" onclick="startShadowing()">🌊 따라하기</button>
             </div>
 
-            <div id="feedback" style="min-height:100px; font-size:1.15rem; line-height:1.5;"></div>
+            <div id="feedback" style="min-height:130px; font-size:1.1rem; line-height:1.6;"></div>
         </div>
 
         <div style="text-align:center;">
-            <button onclick="nextQuestion()" style="padding:16px 36px; font-size:1.2rem;">다음 문장 →</button>
+            <button onclick="nextQuestion()" style="padding:16px 40px; font-size:1.15rem;">다음 문제 →</button>
         </div>
     </div>
 
     <script>
-        // ==================== 인라인 main.js ====================
         let currentLevel = 1;
         let currentQuestion = null;
+        let userSpokenText = "";
+        let dailyCompleted = 0;
+        const DAILY_GOAL = 10;
 
         const database = {
-            1: [ /* Level 1 */ 
+            1: [ // 기초 다지기
                 { ko: "나는 매일 커피를 마신다.", en: "I drink coffee every day." },
                 { ko: "그는 학교에 간다.", en: "He goes to school." },
-                { ko: "우리는 친구를 만난다.", en: "We meet friends." },
                 { ko: "나는 피곤하다.", en: "I am tired." },
-                { ko: "그녀는 책을 읽는다.", en: "She reads a book." },
-                { ko: "오늘 날씨가 좋다.", en: "The weather is nice today." }
+                { ko: "그녀는 책을 읽는다.", en: "She reads a book." }
             ],
-            2: [ /* Level 2 */ 
+            2: [ // 문장 키우기
                 { ko: "어제 영화를 봤다.", en: "I watched a movie yesterday." },
                 { ko: "내일 뭐 할 거야?", en: "What will you do tomorrow?" },
-                { ko: "그는 지금 공부하고 있니?", en: "Is he studying now?" },
-                { ko: "나는 어제 학교에 가지 않았다.", en: "I did not go to school yesterday." }
+                { ko: "그는 지금 공부하고 있니?", en: "Is he studying now?" }
             ],
-            3: [ /* Level 3 */ 
+            3: [ // 실전 흐름
                 { ko: "오늘 아침에 커피를 마시고 산책했어요.", en: "I drank coffee and took a walk this morning." },
-                { ko: "저는 서울에 살아요. 당신은 어디에 사세요?", en: "I live in Seoul. Where do you live?" },
-                { ko: "주말에 뭐 할 계획이세요?", en: "What are you going to do on the weekend?" }
+                { ko: "저는 서울에 살아요. 당신은 어디에 사세요?", en: "I live in Seoul. Where do you live?" }
             ]
         };
 
@@ -118,14 +131,8 @@
             currentLevel = level;
             document.querySelectorAll('.level-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.level) === level));
             document.getElementById('level-title').textContent = 
-                level === 1 ? "Level 1 • Basic Chunks" :
-                level === 2 ? "Level 2 • Tenses & Questions" : "Level 3 • Shadowing & Real Flow";
+                level === 1 ? "기초 다지기" : level === 2 ? "문장 키우기" : "실전 흐름";
             nextQuestion();
-        }
-
-        function getRandomSentence() {
-            const arr = database[currentLevel] || database[1];
-            return arr[Math.floor(Math.random() * arr.length)];
         }
 
         function speakEnglish() {
@@ -136,45 +143,70 @@
             speechSynthesis.speak(u);
         }
 
-        function checkAnswer() {
-            const input = document.getElementById('user-input').value.trim();
-            const fb = document.getElementById('feedback');
-            if (!input) {
-                fb.innerHTML = `<span style="color:orange;">영어 문장을 입력해주세요!</span>`;
-                return;
-            }
-            const user = input.toLowerCase().replace(/[^a-z\s]/g, '');
-            const answer = currentQuestion.en.toLowerCase().replace(/[^a-z\s]/g, '');
-            if (user === answer) {
-                fb.innerHTML = `<span style="color:#22c55e;font-weight:bold;">정답입니다! 🎉<br>${currentQuestion.en}</span>`;
-            } else {
-                fb.innerHTML = `<span style="color:#ef4444;">정답:<br><strong>${currentQuestion.en}</strong></span>`;
+        let recognition = null;
+        function startRecording() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) return alert("음성 인식이 지원되지 않습니다.");
+            
+            recognition = new SR();
+            recognition.lang = 'en-US';
+            recognition.interimResults = true;
+            recognition.continuous = true;
+
+            recognition.onresult = (e) => {
+                let transcript = "";
+                for (let i = 0; i < e.results.length; i++) {
+                    transcript += e.results[i][0].transcript + " ";
+                }
+                userSpokenText = transcript.trim();
+                document.getElementById('speech-result').value = userSpokenText;
+            };
+
+            recognition.start();
+        }
+
+        function stopRecording() {
+            if (recognition) {
+                recognition.stop();
+                if (userSpokenText) {
+                    setTimeout(() => showComparison(), 300);
+                }
             }
         }
 
-        function startListening() {
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) return alert("음성 인식이 지원되지 않는 브라우저예요.");
-            const rec = new SR();
-            rec.lang = 'en-US';
-            rec.start();
-            rec.onresult = e => {
-                document.getElementById('user-input').value = e.results[0][0].transcript;
-                checkAnswer();
-            };
+        function showComparison() {
+            if (!currentQuestion || !userSpokenText) {
+                alert("먼저 말해보기 버튼을 눌러 말해주세요.");
+                return;
+            }
+
+            dailyCompleted++;
+            updateDailyGoal();
+
+            const feedback = document.getElementById('feedback');
+            const userWords = userSpokenText.toLowerCase().split(/\s+/);
+            const correctWords = currentQuestion.en.toLowerCase().split(/\s+/);
+
+            let html = `<strong>나의 말:</strong><br>`;
+            userWords.forEach(word => {
+                if (correctWords.includes(word)) {
+                    html += `<span>${word} </span>`;
+                } else {
+                    html += `<span style="color:#ef4444; text-decoration:line-through;">${word} </span>`;
+                }
+            });
+
+            html += `<br><br><strong>정답:</strong><br><span style="color:#22c55e; font-weight:bold;">${currentQuestion.en}</span>`;
+            feedback.innerHTML = html;
         }
 
         function startShadowing() {
             if (!currentQuestion) return;
             const fb = document.getElementById('feedback');
-            fb.innerHTML = `<span style="color:#c084fc;">🌊 Shadowing 시작!<br>3번 듣고 따라 말해보세요.</span>`;
-            
+            fb.innerHTML = `🌊 따라하기 시작!<br>3번 듣고 따라 말해보세요.`;
             let count = 0;
             const repeat = () => {
-                if (count >= 3) {
-                    fb.innerHTML += `<br><br><button onclick="startListening()" style="background:#8b5cf6;color:white;">🎤 이제 직접 말해보기</button>`;
-                    return;
-                }
+                if (count >= 3) return;
                 speakEnglish();
                 count++;
                 setTimeout(repeat, 1700);
@@ -182,17 +214,23 @@
             repeat();
         }
 
-        function nextQuestion() {
-            currentQuestion = getRandomSentence();
-            document.getElementById('ko-sentence').textContent = currentQuestion.ko;
-            document.getElementById('user-input').value = '';
-            document.getElementById('feedback').innerHTML = '';
+        function updateDailyGoal() {
+            document.getElementById('daily-goal').textContent = 
+                `오늘의 목표: ${dailyCompleted} / ${DAILY_GOAL} 문장`;
         }
 
-        // 앱 시작
+        function nextQuestion() {
+            currentQuestion = database[currentLevel][Math.floor(Math.random() * database[currentLevel].length)];
+            document.getElementById('ko-sentence').textContent = currentQuestion.ko;
+            document.getElementById('speech-result').value = '';
+            document.getElementById('feedback').innerHTML = '';
+            userSpokenText = "";
+        }
+
         window.onload = () => {
             setLevel(1);
-            console.log('%c✅ FlowEnglish v1.1 (인라인 버전) 정상 작동!', 'color:#60a5fa;font-size:16px;');
+            updateDailyGoal();
+            console.log('%cFlowEnglish 최신 버전 로드 완료!', 'color:#60a5fa; font-size:16px;');
         };
     </script>
 </body>
