@@ -3,153 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowEnglish - 28일 Speaking Flow</title>
+    <title>FlowEnglish - Speaking Flow</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --primary: #3b82f6; }
         body { font-family: system-ui, sans-serif; margin:0; background:#0f172a; color:#e2e8f0; }
         .container { max-width: 850px; margin: 0 auto; padding: 20px; }
-        h1 { text-align:center; color:#60a5fa; font-size:2.3rem; margin:25px 0 8px; }
-        
+        h1 { text-align:center; color:#60a5fa; font-size:2.4rem; margin:25px 0 8px; }
         .progress { text-align:center; font-size:1.1rem; margin:10px 0; color:#94a3b8; }
         .card { background:#1e2937; border-radius:20px; padding:24px; margin:18px 0; }
-        .goal-card { border-left:6px solid #60a5fa; padding:18px; background:#172033; border-radius:12px; margin:15px 0; }
+        .goal-card { border-left:6px solid #60a5fa; padding:16px; background:#172033; border-radius:12px; margin:15px 0; text-align:center; font-size:1.1rem; }
         
-        button { padding:15px 25px; margin:8px 5px; border:none; border-radius:16px; font-size:1.1rem; cursor:pointer; }
+        button { padding:15px 25px; margin:8px 5px; border:none; border-radius:16px; font-size:1.05rem; cursor:pointer; width:100%; max-width:320px; }
         .btn-speak { background:#22c55e; color:white; font-weight:bold; }
         .btn-primary { background:var(--primary); color:white; }
+        .btn-expand { background:#a855f7; color:white; font-weight:bold; }
         .btn-answer { background:#f59e0b; color:white; }
         .btn-shadow { background:#8b5cf6; color:white; }
+
+        #speech-result { width:100%; padding:16px; font-size:1.2rem; border-radius:12px; background:#334155; color:white; min-height:85px; resize:none; }
+        
+        .variation-menu {
+            display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+            background:#1e2937; padding:25px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.7);
+            z-index:1000; width:90%; max-width:380px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
 
-        <!-- 진행 상황 -->
-        <div class="progress">
-            <strong>Day <span id="current-day">1</span> / 28</strong> 
-            <span id="week-info" style="margin-left:12px; color:#60a5fa;"></span>
-        </div>
+<div class="container" id="landing-page">
+    <h1>🌊 FlowEnglish</h1>
+    <p style="text-align:center; font-size:1.3rem; color:#94a3b8;">간단 영작부터 실전 Speaking까지</p>
 
-        <h1>🌊 FlowEnglish</h1>
-
-        <!-- 레벨 선택 -->
-        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:20px 0;">
-            <div class="level-btn active" data-level="1" onclick="setLevel(1)">기초 다지기</div>
-            <div class="level-btn" data-level="2" onclick="setLevel(2)">문장 키우기</div>
-            <div class="level-btn" data-level="3" onclick="setLevel(3)">실전 흐름</div>
-        </div>
-
-        <!-- 오늘의 목표 -->
-        <div class="goal-card" id="today-goal">
-            <!-- JS로 동적으로 채움 -->
-        </div>
-
-        <div class="card">
-            <div id="level-title">기초 다지기</div>
-            <h2 id="ko-sentence">한국어 문장이 나오는 곳</h2>
-            
-            <textarea id="speech-result" rows="3" placeholder="말한 내용이 여기에 표시됩니다..."></textarea>
-
-            <div style="text-align:center; margin:25px 0;">
-                <button class="btn-speak" onmousedown="startRecording()" onmouseup="stopRecording()" ontouchstart="startRecording()" ontouchend="stopRecording()">
-                    🎤 말해보기
-                </button>
-                <button class="btn-primary" onclick="speakEnglish()">🔊 영어듣기</button>
-                <button class="btn-answer" onclick="showComparison()">📊 비교하기</button>
-                <button class="btn-shadow" onclick="startShadowing()">🌊 따라하기</button>
-            </div>
-
-            <div id="feedback" style="min-height:140px; font-size:1.1rem;"></div>
-        </div>
-
-        <div style="text-align:center;">
-            <button onclick="nextQuestion()" style="padding:16px 40px;">다음 문제 →</button>
-        </div>
+    <div class="card">
+        <h2>✨ 특징</h2>
+        <ul style="line-height:1.8;">
+            <li>3단계 레벨 시스템</li>
+            <li>누르고 말하기 + 실시간 음성 인식</li>
+            <li>문장 확장하기 (부정/의문문/시제)</li>
+            <li>28일 체계적 학습 계획</li>
+        </ul>
     </div>
 
-    <script>
-        let currentDay = 1;        // 오늘 날짜 (1~28)
-        let currentLevel = 1;
-        let currentQuestion = null;
-        let userSpokenText = "";
-        let dailyCompleted = 0;
-        const DAILY_GOAL = 10;
+    <div style="text-align:center; margin:40px 0;">
+        <button class="btn-speak" onclick="startApp()" style="font-size:1.4rem; padding:20px;">🚀 학습 시작하기</button>
+    </div>
+</div>
 
-        // ==================== 28일 학습 계획 ====================
-        const dailyPlan = {
-            1: { week: "Week 1", title: "기초 다지기", goal: "Be동사와 기본 어순(S+V) 완전 익히기", focus: "I am / You are / He is" },
-            2: { week: "Week 1", title: "기초 다지기", goal: "I / You 중심 Chunk 마스터", focus: "I go, I like, I have" },
-            3: { week: "Week 1", title: "기초 다지기", goal: "He / She 중심 Chunk 익히기", focus: "He goes, She reads" },
-            4: { week: "Week 1", title: "기초 다지기", goal: "We / They + 일상 행동", focus: "We meet, They eat" },
-            5: { week: "Week 1", title: "기초 다지기", goal: "부정문 연습", focus: "I don't, He isn't" },
-            // ... (7~28일까지 계속)
-            7: { week: "Week 1", title: "기초 다지기", goal: "Week 1 전체 복습", focus: "자유롭게 10문장 말하기" },
-            8: { week: "Week 2", title: "기본 동사 확장", goal: "자주 쓰이는 동사 마스터", focus: "go, eat, drink, see, come" },
-            14: { week: "Week 2", title: "기본 동사 확장", goal: "Week 2 종합 복습", focus: "모든 Chunk 섞어서 연습" },
-            15: { week: "Week 3", title: "문장 키우기", goal: "과거 시제 마스터", focus: "I watched, I went" },
-            21: { week: "Week 3", title: "문장 키우기", goal: "질문문 완전 정복", focus: "Do you ~? / What will you ~?" },
-            22: { week: "Week 4", title: "실전 흐름", goal: "Shadowing + Listen & Respond", focus: "긴 문장 자연스럽게 말하기" },
-            28: { week: "Week 4", title: "실전 흐름", goal: "28일 최종 복습", focus: "실전 대화 수준 도달" }
+<!-- ==================== 학습 화면 ==================== -->
+<div class="container" id="app-page" style="display:none;">
+    <div class="progress">
+        <strong>Day <span id="current-day">1</span> / 28</strong>
+    </div>
+    <h1>🌊 FlowEnglish</h1>
+
+    <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:20px 0;">
+        <div class="level-btn active" data-level="1" onclick="setLevel(1)">기초 다지기</div>
+        <div class="level-btn" data-level="2" onclick="setLevel(2)">문장 키우기</div>
+        <div class="level-btn" data-level="3" onclick="setLevel(3)">실전 흐름</div>
+    </div>
+
+    <div class="goal-card" id="level-goal"></div>
+
+    <div class="card">
+        <div id="level-title">기초 다지기</div>
+        <h2 id="ko-sentence">한국어 문장이 나오는 곳</h2>
+        
+        <textarea id="speech-result" rows="3" placeholder="말한 내용이 여기에 표시됩니다..."></textarea>
+
+        <div style="text-align:center; margin:25px 0;">
+            <button class="btn-speak" onmousedown="startRecording()" onmouseup="stopRecording()" ontouchstart="startRecording()" ontouchend="stopRecording()">
+                🎤 말해보기
+            </button>
+            <button class="btn-primary" onclick="speakEnglish()">🔊 영어듣기</button>
+            <button class="btn-expand" onclick="showVariationMenu()">🔄 확장하기</button>
+            <button class="btn-answer" onclick="showComparison()">📊 비교하기</button>
+            <button class="btn-shadow" onclick="startShadowing()">🌊 따라하기</button>
+        </div>
+
+        <div id="feedback" style="min-height:140px; font-size:1.1rem;"></div>
+    </div>
+
+    <div style="text-align:center;">
+        <button onclick="nextQuestion()" style="padding:16px 40px;">다음 문제 →</button>
+    </div>
+</div>
+
+<!-- 확장하기 메뉴 -->
+<div class="variation-menu" id="variation-menu">
+    <h3>🔄 문장 확장하기</h3>
+    <button onclick="makeVariation('negative')" style="width:100%; margin:6px 0;">부정문 만들기</button>
+    <button onclick="makeVariation('question')" style="width:100%; margin:6px 0;">의문문 만들기</button>
+    <button onclick="makeVariation('neg-question')" style="width:100%; margin:6px 0;">부정 의문문 만들기</button>
+    <button onclick="makeVariation('past')" style="width:100%; margin:6px 0;">과거 시제로 바꾸기</button>
+    <button onclick="makeVariation('future')" style="width:100%; margin:6px 0;">미래 시제로 바꾸기</button>
+    <button onclick="closeVariationMenu()" style="background:#64748b; width:100%; margin-top:15px;">닫기</button>
+</div>
+
+<script>
+    let currentDay = 1;
+    let currentLevel = 1;
+    let currentQuestion = null;
+    let userSpokenText = "";
+    let recognition = null;
+
+    const levelGoals = {
+        1: "🌱 영어의 기본 어순과 Chunk를 익히는 단계",
+        2: "🌿 시제와 질문·부정문을 자유롭게 만드는 단계",
+        3: "🌊 듣고 바로 말하는 실전 Speaking 흐름 단계"
+    };
+
+    const database = {
+        1: [
+            { ko: "나는 매일 커피를 마신다.", en: "I drink coffee every day." },
+            { ko: "그는 학교에 간다.", en: "He goes to school." },
+            { ko: "나는 피곤하다.", en: "I am tired." }
+        ],
+        2: [
+            { ko: "어제 영화를 봤다.", en: "I watched a movie yesterday." },
+            { ko: "내일 뭐 할 거야?", en: "What will you do tomorrow?" }
+        ],
+        3: [
+            { ko: "오늘 아침에 커피를 마시고 산책했어요.", en: "I drank coffee and took a walk this morning." }
+        ]
+    };
+
+    function startApp() {
+        document.getElementById('landing-page').style.display = 'none';
+        document.getElementById('app-page').style.display = 'block';
+        setLevel(1);
+    }
+
+    function setLevel(level) {
+        currentLevel = level;
+        document.querySelectorAll('.level-btn').forEach(btn => 
+            btn.classList.toggle('active', parseInt(btn.dataset.level) === level)
+        );
+        document.getElementById('level-goal').innerHTML = levelGoals[level];
+        document.getElementById('level-title').textContent = 
+            level === 1 ? "기초 다지기" : level === 2 ? "문장 키우기" : "실전 흐름";
+        nextQuestion();
+    }
+
+    function speakEnglish() {
+        if (!currentQuestion) return;
+        const u = new SpeechSynthesisUtterance(currentQuestion.en);
+        u.lang = 'en-US';
+        u.rate = currentLevel === 3 ? 1.05 : 0.9;
+        speechSynthesis.speak(u);
+    }
+
+    function startRecording() {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) return alert("음성 인식이 지원되지 않습니다.");
+        
+        recognition = new SR();
+        recognition.lang = 'en-US';
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 5;
+        recognition.continuous = false;
+
+        recognition.onresult = (e) => {
+            let transcript = "";
+            for (let i = 0; i < e.results.length; i++) {
+                transcript += e.results[i][0].transcript + " ";
+            }
+            userSpokenText = transcript.trim();
+            document.getElementById('speech-result').value = userSpokenText;
         };
+        recognition.start();
+    }
 
-        function updateDailyPlan() {
-            const plan = dailyPlan[currentDay] || dailyPlan[1];
-            document.getElementById('current-day').textContent = currentDay;
-            document.getElementById('week-info').textContent = plan.week;
+    function stopRecording() {
+        if (recognition) recognition.stop();
+        if (userSpokenText) setTimeout(showComparison, 300);
+    }
 
-            document.getElementById('today-goal').innerHTML = `
-                <strong>${plan.emoji || '🎯'} Day ${currentDay} 목표</strong><br>
-                <span style="font-size:1.15rem;">${plan.goal}</span><br>
-                <small style="color:#94a3b8;">오늘 집중: ${plan.focus}</small>
-            `;
+    function showComparison() {
+        if (!currentQuestion || !userSpokenText) return alert("먼저 말해보기를 해주세요.");
+        const fb = document.getElementById('feedback');
+        fb.innerHTML = `<strong>나의 말:</strong><br>${userSpokenText}<br><br><strong>정답:</strong><br><span style="color:#22c55e;">${currentQuestion.en}</span>`;
+    }
+
+    function showVariationMenu() {
+        if (!currentQuestion) return alert("문장을 먼저 불러와주세요.");
+        document.getElementById('variation-menu').style.display = 'block';
+    }
+
+    function closeVariationMenu() {
+        document.getElementById('variation-menu').style.display = 'none';
+    }
+
+    function makeVariation(type) {
+        if (!currentQuestion) return;
+        closeVariationMenu();
+        let newEn = currentQuestion.en;
+        let newKo = currentQuestion.ko;
+
+        switch(type) {
+            case 'negative': newEn = newEn.replace(/^I am /, "I am not "); newKo += " (부정)"; break;
+            case 'question': newEn = "Do " + newEn.toLowerCase() + "?"; break;
+            case 'neg-question': newEn = "Don't " + newEn.toLowerCase() + "?"; break;
+            case 'past': newEn = newEn.replace("drink", "drank").replace("go", "went"); break;
+            case 'future': newEn = "I will " + newEn.toLowerCase().replace(/^i /, ""); break;
         }
 
-        function setLevel(level) {
-            currentLevel = level;
-            document.querySelectorAll('.level-btn').forEach(btn => 
-                btn.classList.toggle('active', parseInt(btn.dataset.level) === level)
-            );
-            nextQuestion();
-        }
+        currentQuestion = { ko: newKo, en: newEn };
+        document.getElementById('ko-sentence').textContent = newKo;
+        document.getElementById('feedback').innerHTML = `<span style="color:#c084fc;">🔄 확장된 문장: <strong>${newEn}</strong></span>`;
+    }
 
-        // ==================== 기존 기능들 (간단 버전) ====================
-        function speakEnglish() {
-            if (!currentQuestion) return;
-            const u = new SpeechSynthesisUtterance(currentQuestion.en);
-            u.lang = 'en-US';
-            u.rate = currentLevel === 3 ? 1.05 : 0.9;
-            speechSynthesis.speak(u);
-        }
+    function startShadowing() {
+        if (!currentQuestion) return;
+        const fb = document.getElementById('feedback');
+        fb.innerHTML = `🌊 따라하기 시작! 3번 듣고 따라 말해보세요.`;
+        let count = 0;
+        const repeat = () => { if (count++ < 3) { speakEnglish(); setTimeout(repeat, 1700); }};
+        repeat();
+    }
 
-        function startRecording() { /* 이전 최적화 코드 */ 
-            // ... (이전 버전의 startRecording 함수 그대로 사용)
-        }
+    function nextQuestion() {
+        const arr = database[currentLevel] || database[1];
+        currentQuestion = arr[Math.floor(Math.random() * arr.length)];
+        document.getElementById('ko-sentence').textContent = currentQuestion.ko;
+        document.getElementById('speech-result').value = '';
+        document.getElementById('feedback').innerHTML = '';
+        userSpokenText = "";
+    }
 
-        function stopRecording() {
-            if (userSpokenText) setTimeout(showComparison, 300);
-        }
-
-        function showComparison() { /* 이전 비교 함수 */ }
-
-        function startShadowing() { /* 이전 Shadowing */ }
-
-        function nextQuestion() {
-            // 간단 DB
-            const sentences = [
-                { ko: "나는 매일 커피를 마신다.", en: "I drink coffee every day." },
-                { ko: "그는 학교에 간다.", en: "He goes to school." }
-            ];
-            currentQuestion = sentences[Math.floor(Math.random() * sentences.length)];
-            document.getElementById('ko-sentence').textContent = currentQuestion.ko;
-        }
-
-        // 앱 시작
-        window.onload = () => {
-            updateDailyPlan();
-            nextQuestion();
-            console.log('%cFlowEnglish 28일 계획 버전 로드 완료', 'color:#60a5fa; font-size:16px;');
-        };
-    </script>
+    window.onload = () => {
+        console.log('%cFlowEnglish 완전 통합 버전 로드 완료', 'color:#60a5fa; font-size:16px;');
+    };
+</script>
 </body>
 </html>
