@@ -99,7 +99,7 @@
         ]
     };
 
-    // ==================== 축약형 대폭 강화 ====================
+    // ==================== 모든 주요 축약형 포함 ====================
     function makeVariation(type) {
         if (!currentQuestion) return;
 
@@ -108,17 +108,18 @@
 
         switch(type) {
             case 'negative':
-                // Be 동사 축약
-                newEn = newEn.replace(/I am /i, "I'm not ")
-                             .replace(/You are /i, "You're not ")
-                             .replace(/He is /i, "He's not ")
-                             .replace(/She is /i, "She's not ")
-                             .replace(/It is /i, "It's not ")
-                             .replace(/We are /i, "We're not ")
-                             .replace(/They are /i, "They're not ");
-                
-                // 일반동사 축약
-                if (!/not/i.test(newEn)) {
+                // Be 동사 축약형
+                newEn = newEn
+                    .replace(/I am /i, "I'm not ")
+                    .replace(/You are /i, "You're not ")
+                    .replace(/He is /i, "He's not ")
+                    .replace(/She is /i, "She's not ")
+                    .replace(/It is /i, "It's not ")
+                    .replace(/We are /i, "We're not ")
+                    .replace(/They are /i, "They're not ");
+
+                // 일반동사 축약형
+                if (!/n't|not/i.test(newEn)) {
                     const subject = newEn.split(' ')[0].toLowerCase();
                     const rest = newEn.split(' ').slice(1).join(' ');
                     if (['he','she','it'].includes(subject)) {
@@ -224,7 +225,7 @@
 
     window.onload = () => {
         setLevel(1);
-        console.log('%cFlowEnglish - 축약형 대폭 강화 버전', 'color:#60a5fa; font-size:16px;');
+        console.log('%cFlowEnglish - 모든 주요 축약형 포함 버전', 'color:#60a5fa; font-size:16px;');
     };
 </script>
 </body>
