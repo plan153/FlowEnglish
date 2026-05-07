@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowEnglish - 28일 Speaking Flow</title>
+    <title>FlowEnglish - Speaking Flow</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --primary: #3b82f6; }
@@ -13,8 +13,8 @@
         .progress { text-align:center; font-size:1.15rem; margin:10px 0; color:#94a3b8; }
         .card { background:#1e2937; border-radius:20px; padding:24px; margin:18px 0; }
         .goal-card { border-left:6px solid #60a5fa; padding:16px; background:#172033; border-radius:12px; margin:15px 0; text-align:center; }
-        
-        button { padding:15px 25px; margin:8px 5px; border:none; border-radius:16px; font-size:1.05rem; cursor:pointer; }
+
+        button { padding:14px 20px; margin:6px 4px; border:none; border-radius:12px; font-size:1.05rem; cursor:pointer; }
         .btn-speak { background:#22c55e; color:white; font-weight:bold; }
         .btn-primary { background:var(--primary); color:white; }
         .btn-expand { background:#a855f7; color:white; font-weight:bold; }
@@ -22,20 +22,13 @@
         .btn-shadow { background:#8b5cf6; color:white; }
 
         #speech-result { width:100%; padding:16px; font-size:1.2rem; border-radius:12px; background:#334155; color:white; min-height:85px; resize:none; }
-        
-        .variation-menu {
-            display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-            background:#1e2937; padding:25px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.7);
-            z-index:1000; width:90%; max-width:380px;
-        }
     </style>
 </head>
 <body>
 
-<div class="container" id="app-page">
+<div class="container">
     <div class="progress">
         <strong>Day <span id="current-day">1</span> / 28</strong>
-        <button onclick="completeDay()" style="padding:8px 16px; font-size:0.95rem; margin-left:12px; background:#eab308; color:black;">오늘 완료 →</button>
     </div>
     <h1>🌊 FlowEnglish</h1>
 
@@ -53,12 +46,20 @@
         
         <textarea id="speech-result" rows="3" placeholder="말한 내용이 여기에 표시됩니다..."></textarea>
 
-        <div style="text-align:center; margin:25px 0;">
+        <!-- 확장 버튼들 (바로 보임) -->
+        <div style="margin:20px 0; text-align:center;">
+            <button class="btn-expand" onclick="makeVariation('negative')">부정문</button>
+            <button class="btn-expand" onclick="makeVariation('question')">의문문</button>
+            <button class="btn-expand" onclick="makeVariation('neg-question')">부정의문문</button>
+            <button class="btn-expand" onclick="makeVariation('past')">과거 시제</button>
+            <button class="btn-expand" onclick="makeVariation('future')">미래 시제</button>
+        </div>
+
+        <div style="text-align:center;">
             <button class="btn-speak" onmousedown="startRecording()" onmouseup="stopRecording()" ontouchstart="startRecording()" ontouchend="stopRecording()">
                 🎤 말해보기
             </button>
             <button class="btn-primary" onclick="speakEnglish()">🔊 영어듣기</button>
-            <button class="btn-expand" onclick="showVariationMenu()">🔄 확장하기</button>
             <button class="btn-answer" onclick="showComparison()">📊 비교하기</button>
             <button class="btn-shadow" onclick="startShadowing()">🌊 따라하기</button>
         </div>
@@ -69,17 +70,6 @@
     <div style="text-align:center;">
         <button onclick="nextQuestion()" style="padding:16px 40px;">다음 문제 →</button>
     </div>
-</div>
-
-<!-- 확장 메뉴 -->
-<div class="variation-menu" id="variation-menu">
-    <h3>🔄 문장 확장하기</h3>
-    <button onclick="makeVariation('negative')" style="width:100%; margin:6px 0;">부정문 만들기</button>
-    <button onclick="makeVariation('question')" style="width:100%; margin:6px 0;">의문문 만들기</button>
-    <button onclick="makeVariation('neg-question')" style="width:100%; margin:6px 0;">부정 의문문 만들기</button>
-    <button onclick="makeVariation('past')" style="width:100%; margin:6px 0;">과거 시제로</button>
-    <button onclick="makeVariation('future')" style="width:100%; margin:6px 0;">미래 시제로</button>
-    <button onclick="closeVariationMenu()" style="background:#64748b; width:100%; margin-top:15px;">닫기</button>
 </div>
 
 <script>
@@ -100,23 +90,16 @@
             { ko: "나는 매일 커피를 마신다.", en: "I drink coffee every day." },
             { ko: "그는 학교에 간다.", en: "He goes to school." },
             { ko: "나는 피곤하다.", en: "I am tired." },
-            { ko: "그녀는 책을 읽는다.", en: "She reads a book." },
-            { ko: "우리는 친구를 만난다.", en: "We meet friends." }
+            { ko: "그녀는 책을 읽는다.", en: "She reads a book." }
         ],
         2: [
             { ko: "어제 영화를 봤다.", en: "I watched a movie yesterday." },
-            { ko: "내일 뭐 할 거야?", en: "What will you do tomorrow?" },
-            { ko: "그는 지금 공부하고 있니?", en: "Is he studying now?" }
+            { ko: "내일 뭐 할 거야?", en: "What will you do tomorrow?" }
         ],
         3: [
-            { ko: "오늘 아침에 커피를 마시고 산책했어요.", en: "I drank coffee and took a walk this morning." },
-            { ko: "저는 서울에 살아요. 당신은 어디에 사세요?", en: "I live in Seoul. Where do you live?" }
+            { ko: "오늘 아침에 커피를 마시고 산책했어요.", en: "I drank coffee and took a walk this morning." }
         ]
     };
-
-    function updateDayUI() {
-        document.getElementById('current-day').textContent = currentDay;
-    }
 
     function setLevel(level) {
         currentLevel = level;
@@ -154,67 +137,67 @@
         if (userSpokenText) setTimeout(showComparison, 400);
     }
 
-    // ==================== 비교하기 개선 ====================
     function showComparison() {
-        if (!currentQuestion || !userSpokenText) {
-            alert("먼저 말해보기를 해주세요.");
-            return;
-        }
-
+        if (!currentQuestion || !userSpokenText) return alert("먼저 말해보기를 해주세요.");
         const fb = document.getElementById('feedback');
         fb.innerHTML = `
-            <strong>🎤 나의 녹음:</strong><br>
-            <button onclick="speakEnglish('${userSpokenText}')" style="padding:8px 16px; font-size:0.95rem;">🔊 내 말 다시 듣기</button><br><br>
-            <strong>📝 정답:</strong><br>
-            <button onclick="speakEnglish('${currentQuestion.en}')" style="padding:8px 16px; font-size:0.95rem;">🔊 정답 듣기</button><br><br>
-            <strong>비교:</strong><br>
+            <strong>🎤 나의 녹음</strong><br>
+            <button onclick="speakEnglish('${userSpokenText}')" style="padding:8px 20px;">🔊 내 말 듣기</button><br><br>
+            <strong>📝 정답</strong><br>
+            <button onclick="speakEnglish('${currentQuestion.en}')" style="padding:8px 20px;">🔊 정답 듣기</button><br><br>
+            <strong>비교 결과</strong><br>
             ${userSpokenText}<br><br>
             <span style="color:#22c55e;">정답: ${currentQuestion.en}</span>
         `;
     }
 
-    // ==================== 따라하기 개선 (텀 추가) ====================
+    function showVariationMenu() {} // 기존 팝업 제거
+
+    function makeVariation(type) {
+        if (!currentQuestion) return;
+        let newEn = currentQuestion.en;
+        let newKo = currentQuestion.ko;
+
+        switch(type) {
+            case 'negative':
+                newEn = newEn.replace(/I am /i, "I am not ");
+                newKo = newKo.replace(/한다$/, "하지 않는다.");
+                break;
+            case 'question':
+                newEn = "Do " + newEn.toLowerCase() + "?";
+                newKo = newKo.replace(/한다\.$/, "합니까?");
+                break;
+            case 'neg-question':
+                newEn = "Don't " + newEn.toLowerCase() + "?";
+                newKo = newKo.replace(/한다\.$/, "하지 않습니까?");
+                break;
+            case 'past':
+                newEn = newEn.replace(/drink/i, "drank").replace(/go/i, "went").replace(/watch/i, "watched");
+                newKo = newKo.replace(/한다$/, "했다.");
+                break;
+            case 'future':
+                newEn = "I will " + newEn.toLowerCase().replace(/^i /i, "");
+                newKo = newKo.replace(/한다$/, "할 것이다.");
+                break;
+        }
+
+        currentQuestion = { ko: newKo, en: newEn };
+        document.getElementById('ko-sentence').textContent = newKo;
+        document.getElementById('feedback').innerHTML = `<span style="color:#c084fc;">🔄 확장되었습니다!<br><strong>${newEn}</strong></span>`;
+    }
+
     function startShadowing() {
         if (!currentQuestion) return;
         const fb = document.getElementById('feedback');
-        fb.innerHTML = `🌊 따라하기 시작!<br>문장을 듣고 충분한 여백 후에 따라 말하세요.`;
-
+        fb.innerHTML = `🌊 따라하기 시작!<br>문장을 듣고 충분히 따라 말하세요.`;
         let count = 0;
-        const shadow = () => {
-            if (count >= 3) {
-                fb.innerHTML += `<br><br><strong>연습 완료! 다시 하고 싶으면 버튼을 눌러주세요.</strong>`;
-                return;
-            }
+        const repeat = () => {
+            if (count >= 3) return;
             speakEnglish(currentQuestion.en);
             count++;
-            setTimeout(shadow, 2800);   // 문장 길이 + 충분한 따라할 시간 (2.8초)
+            setTimeout(repeat, 2800);   // 따라 말할 충분한 텀
         };
-        shadow();
-    }
-
-    function showVariationMenu() {
-        if (!currentQuestion) return alert("문장을 먼저 불러와주세요.");
-        document.getElementById('variation-menu').style.display = 'block';
-    }
-
-    function closeVariationMenu() {
-        document.getElementById('variation-menu').style.display = 'none';
-    }
-
-    function makeVariation(type) { /* 기존 확장하기 로직 */ 
-        // ... (이전 버전과 동일)
-        let newEn = currentQuestion.en;
-        let newKo = currentQuestion.ko;
-        switch(type) {
-            case 'negative': newEn = newEn.replace(/I am /, "I am not "); break;
-            case 'question': newEn = "Do " + newEn.toLowerCase() + "?"; break;
-            case 'neg-question': newEn = "Don't " + newEn.toLowerCase() + "?"; break;
-            case 'past': newEn = newEn.replace("drink", "drank").replace("go", "went"); break;
-            case 'future': newEn = "I will " + newEn.toLowerCase().replace(/^i /, ""); break;
-        }
-        currentQuestion = { ko: newKo, en: newEn };
-        document.getElementById('ko-sentence').textContent = newKo;
-        closeVariationMenu();
+        repeat();
     }
 
     function nextQuestion() {
@@ -226,21 +209,9 @@
         userSpokenText = "";
     }
 
-    function completeDay() {
-        if (confirm(`Day ${currentDay}을 완료하시겠습니까?`)) {
-            currentDay = Math.min(currentDay + 1, 28);
-            updateDayUI();
-        }
-    }
-
-    function updateDayUI() {
-        document.getElementById('current-day').textContent = currentDay;
-    }
-
     window.onload = () => {
-        updateDayUI();
         setLevel(1);
-        console.log('%cFlowEnglish 최종 버전 - 비교하기 + 따라하기 개선', 'color:#60a5fa; font-size:16px;');
+        console.log('%cFlowEnglish - 확장하기 버튼 즉시 표시 버전', 'color:#60a5fa; font-size:16px;');
     };
 </script>
 </body>
