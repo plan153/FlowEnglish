@@ -1,58 +1,53 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowEnglish - Speaking Flow</title>
-    <link rel="manifest" href="manifest.json">
-    <style>
-        :root { --primary: #3b82f6; }
-        body { font-family: system-ui, sans-serif; margin:0; background:#0f172a; color:#e2e8f0; }
-        .container { max-width: 850px; margin: 0 auto; padding: 20px; }
-        h1 { text-align:center; color:#60a5fa; font-size:2.4rem; margin:25px 0 8px; }
-        .progress { text-align:center; font-size:1.15rem; margin:10px 0; color:#94a3b8; }
-        .card { background:#1e2937; border-radius:20px; padding:24px; margin:18px 0; }
-        .goal-card { border-left:6px solid #60a5fa; padding:16px; background:#172033; border-radius:12px; margin:15px 0; text-align:center; }
-        
-        button { padding:14px 22px; margin:6px 4px; border:none; border-radius:12px; font-size:1.05rem; cursor:pointer; }
-        .btn-speak { background:#22c55e; color:white; font-weight:bold; }
-        .btn-primary { background:var(--primary); color:white; }
-        .btn-expand { background:#a855f7; color:white; font-weight:bold; }
-        .btn-answer { background:#f59e0b; color:white; }
-        .btn-shadow { background:#8b5cf6; color:white; }
+<script>
+// ==================== 개선된 문장 확장 로직 ====================
+function makeVariation(type) {
+    if (!currentQuestion) return;
 
-        #speech-result { width:100%; padding:16px; font-size:1.2rem; border-radius:12px; background:#334155; color:white; min-height:85px; resize:none; }
-    </style>
-</head>
-<body>
+    // 원본 문장을 기준으로 항상 새로 변환 (누적 오류 방지)
+    let baseEn = currentQuestion.en;   // 원래 영어 문장
+    let newEn = baseEn;
+    let newKo = currentQuestion.ko;
 
-<div class="container">
-    <div class="progress">
-        <strong>Day <span id="current-day">1</span> / 28</strong>
-    </div>
-    <h1>🌊 FlowEnglish</h1>
+    switch(type) {
+        case 'negative':
+            if (/^(I am|He is|She is|It is|We are|They are)/i.test(baseEn)) {
+                newEn = baseEn.replace(/ am /i, ' am not ').replace(/ is /i, ' is not ').replace(/ are /i, ' are not ');
+            } else {
+                const subject = baseEn.split(' ')[0].toLowerCase();
+                if (['he','she','it'].includes(subject)) {
+                    newEn = subject + " does not " + baseEn.split(' ').slice(1).join(' ');
+                } else {
+                    newEn = subject + " do not " + baseEn.split(' ').slice(1).join(' ');
+                }
+            }
+            newKo = newKo.replace(/한다$/, '하지 않는다.');
+            break;
 
-    <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:20px 0;">
-        <div class="level-btn active" data-level="1" onclick="setLevel(1)">기초 다지기</div>
-        <div class="level-btn" data-level="2" onclick="setLevel(2)">문장 키우기</div>
-        <div class="level-btn" data-level="3" onclick="setLevel(3)">실전 흐름</div>
-    </div>
+        case 'question':
+            newEn = "Do " + baseEn.toLowerCase().replace(/^i /, '') + "?";
+            newKo = newKo.replace(/한다\.$/, '합니까?');
+            break;
 
-    <div class="goal-card" id="level-goal"></div>
+        case 'neg-question':
+            newEn = "Don't " + baseEn.toLowerCase().replace(/^i /, '') + "?";
+            newKo = newKo.replace(/한다\.$/, '하지 않습니까?');
+            break;
 
-    <div class="card">
-        <div id="level-title">기초 다지기</div>
-        <h2 id="ko-sentence">한국어 문장이 나오는 곳</h2>
-        
-        <textarea id="speech-result" rows="3" placeholder="말한 내용이 여기에 표시됩니다..."></textarea>
+        case 'past':
+            newEn = baseEn.replace(/drink/i, 'drank').replace(/go/i, 'went').replace(/watch/i, 'watched');
+            newKo = newKo.replace(/한다$/, '했다.');
+            break;
 
-        <div style="text-align:center; margin:20px 0;">
-            <button class="btn-expand" onclick="makeVariation('negative')">부정문</button>
-            <button class="btn-expand" onclick="makeVariation('question')">의문문</button>
-            <button class="btn-expand" onclick="makeVariation('neg-question')">부정의문문</button>
-            <button class="btn-expand" onclick="makeVariation('past')">과거</button>
-            <button class="btn-expand" onclick="makeVariation('future')">미래</button>
-        </div>
+        case 'future':
+            newEn = "I will " + baseEn.toLowerCase().replace(/^i /i, '');
+            newKo = newKo.replace(/한다$/, '할 것이다.');
+            break;
+    }
 
-        <div style="text-align:center;">
-            <button class="btn-speak" on
+    currentQuestion = { ...currentQuestion, ko: newKo, en: newEn };
+    document.getElementById('ko-sentence').textContent = newKo;
+    
+    document.getElementById('feedback').innerHTML = 
+        `<span style="color:#c084fc;">🔄 변환 완료 → <strong>${newEn}</strong></span>`;
+}
+</script>
